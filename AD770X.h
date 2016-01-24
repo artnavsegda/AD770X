@@ -2,6 +2,7 @@
 #define AD770X_H
 
 #include <Arduino.h>
+#include <SPI.h>
 
 /*
  * AD7705/AD7706 Library
@@ -64,14 +65,6 @@ public:
 
     static const byte CLK_DIV_1 = 0x1;
     static const byte CLK_DIV_2 = 0x2;
-
-    byte spiTransfer(volatile byte data) {
-        SPDR = data;
-
-        while (!(SPSR & _BV(SPIF)));
-
-        return SPDR;
-    };
 
     AD770X(double vref);
     void setNextOperation(byte reg, byte channel, byte readWrite);

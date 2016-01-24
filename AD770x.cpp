@@ -7,6 +7,7 @@
  */
 
 #include "AD770X.h"
+#include "SPI.h"
 
 //write communication register
 //   7        6      5      4      3      2      1      0
@@ -17,7 +18,7 @@ void AD770X::setNextOperation(byte reg, byte channel, byte readWrite) {
     r = reg << 4 | readWrite << 3 | channel;
 
     digitalWrite(pinCS, LOW);
-    spiTransfer(r);
+    SPI.transfer(r);
     digitalWrite(pinCS, HIGH);
 }
 
@@ -34,7 +35,7 @@ void AD770X::writeClockRegister(byte CLKDIS, byte CLKDIV, byte outputUpdateRate)
     r &= ~(1 << 2); // clear CLK
 
     digitalWrite(pinCS, LOW);
-    spiTransfer(r);
+    SPI.transfer(r);
     digitalWrite(pinCS, HIGH);
 }
 
@@ -46,14 +47,14 @@ void AD770X::writeSetupRegister(byte operationMode, byte gain, byte unipolar, by
     byte r = operationMode << 6 | gain << 3 | unipolar << 2 | buffered << 1 | fsync;
 
     digitalWrite(pinCS, LOW);
-    spiTransfer(r);
+    SPI.transfer(r);
     digitalWrite(pinCS, HIGH);
 }
 
 unsigned int AD770X::readADResult() {
     digitalWrite(pinCS, LOW);
-    byte b1 = spiTransfer(0x0);
-    byte b2 = spiTransfer(0x0);
+    byte b1 = SPI.transfer(0x0);
+    byte b2 = SPI.transfer(0x0);
     digitalWrite(pinCS, HIGH);
 
     unsigned int r = b1 << 8 | b2;
@@ -73,7 +74,7 @@ bool AD770X::dataReady(byte channel) {
     setNextOperation(REG_CMM, channel, 1);
 
     digitalWrite(pinCS, LOW);
-    byte b1 = spiTransfer(0x0);
+    byte b1 = SPI.transfer(0x0);
     digitalWrite(pinCS, HIGH);
 
     return (b1 & 0x80) == 0x0;
@@ -82,7 +83,7 @@ bool AD770X::dataReady(byte channel) {
 void AD770X::reset() {
     digitalWrite(pinCS, LOW);
     for (int i = 0; i < 100; i++)
-        spiTransfer(0xff);
+        SPI.transfer(0xff);
     digitalWrite(pinCS, HIGH);
 }
 
@@ -94,7 +95,7 @@ AD770X::AD770X(double vref) {
     pinMode(pinCS, OUTPUT);
 
     digitalWrite(pinCS, HIGH);
-    SPCR = _BV(SPE) | _BV(MSTR) | _BV(CPOL) | _BV(CPHA) | _BV(SPI2X) | _BV(SPR1) | _BV(SPR0);
+    //SPCR = _BV(SPE) | _BV(MSTR) | _BV(CPOL) | _BV(CPHA) | _BV(SPI2X) | _BV(SPR1) | _BV(SPR0);
 }
 
 void AD770X::init(byte channel, byte clkDivider, byte polarity, byte gain, byte updRate) {
